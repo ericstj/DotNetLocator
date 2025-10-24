@@ -20,7 +20,7 @@ internal sealed class DotNetManagedLocator : IDotNetLocator
     {
         try
         {
-            var resolvedDotNetRoot = dotnetRoot ?? await DiscoverDotNetRootAsync();
+            var resolvedDotNetRoot = dotnetRoot ?? await DiscoverDotNetRootAsync(cancellationToken);
             if (string.IsNullOrEmpty(resolvedDotNetRoot))
             {
                 return DotNetLocationResult<DotNetInstallationInfo>.Failure(
@@ -53,7 +53,7 @@ internal sealed class DotNetManagedLocator : IDotNetLocator
         }
     }
 
-    private static async Task<string?> DiscoverDotNetRootAsync()
+    private static async Task<string?> DiscoverDotNetRootAsync(CancellationToken cancellationToken)
     {
         // 1. Try DOTNET_ROOT environment variable
         var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
@@ -63,7 +63,7 @@ internal sealed class DotNetManagedLocator : IDotNetLocator
         }
 
         // 2. Try to find dotnet executable in PATH and derive root
-        var dotnetExecutable = await FindDotNetExecutableInPathAsync();
+        var dotnetExecutable = await DotNetPathUtilities.LocateDotNetExecutableAsync(cancellationToken);
         if (!string.IsNullOrEmpty(dotnetExecutable))
         {
             return Path.GetDirectoryName(dotnetExecutable);
@@ -112,33 +112,6 @@ internal sealed class DotNetManagedLocator : IDotNetLocator
             yield return "/usr/local/dotnet";
         }
     }
-
-    private static Task<string?> FindDotNetExecutableInPathAsync()
-    {
-        var pathVariable = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrEmpty(pathVariable))
-            return Task.FromResult<string?>(null);
-
-        var executableName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
-        var paths = pathVariable.Split(Path.PathSeparator);
-
-        foreach (var path in paths)
-        {
-            try
-            {
-                var fullPath = Path.Combine(path, executableName);
-                if (File.Exists(fullPath))
-                    return Task.FromResult<string?>(fullPath);
-            }
-            catch
-            {
-                // Ignore invalid paths
-            }
-        }
-
-        return Task.FromResult<string?>(null);
-    }
-
     private static Task<DotNetHostInfo> GetHostInfoAsync(string dotnetRoot)
     {
         var hostExecutablePath = Path.Combine(dotnetRoot, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
@@ -201,12 +174,10 @@ internal sealed class DotNetManagedLocator : IDotNetLocator
         foreach (var versionDir in Directory.GetDirectories(sdkDirectory))
         {
             var versionName = new DirectoryInfo(versionDir).Name;
-            
-            // Skip NuGet fallback folders and other non-version directories
+
             if (!VersionRegex.IsMatch(versionName))
                 continue;
 
-            // Verify this is a valid SDK directory by checking for required files
             if (IsValidSdkDirectory(versionDir))
             {
                 sdks.Add(new DotNetSdkInfo
@@ -217,14 +188,12 @@ internal sealed class DotNetManagedLocator : IDotNetLocator
             }
         }
 
-        // Sort by version in descending order
         var result = sdks.OrderByDescending(s => ParseVersion(s.Version)).ToArray();
         return Task.FromResult<IReadOnlyList<DotNetSdkInfo>>(result);
     }
 
     private static bool IsValidSdkDirectory(string sdkPath)
     {
-        // Check for essential SDK files
         var requiredFiles = new[]
         {
             "Microsoft.Common.CurrentVersion.targets",

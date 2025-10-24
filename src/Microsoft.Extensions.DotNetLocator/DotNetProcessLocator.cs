@@ -17,7 +17,7 @@ internal sealed class DotNetProcessLocator : IDotNetLocator
     {
         try
         {
-            var dotnetExecutable = await FindDotNetExecutableAsync(dotnetRoot);
+            var dotnetExecutable = await FindDotNetExecutableAsync(dotnetRoot, cancellationToken);
             if (dotnetExecutable == null)
             {
                 return DotNetLocationResult<DotNetInstallationInfo>.Failure(
@@ -43,38 +43,26 @@ internal sealed class DotNetProcessLocator : IDotNetLocator
         }
     }
 
-    private static Task<string?> FindDotNetExecutableAsync(string? dotnetRoot)
+    private static async Task<string?> FindDotNetExecutableAsync(string? dotnetRoot, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrEmpty(dotnetRoot))
         {
             var explicitPath = Path.Combine(dotnetRoot, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
             if (File.Exists(explicitPath))
-                return Task.FromResult<string?>(explicitPath);
+                return explicitPath;
         }
 
-        // Try to find dotnet in PATH
-        var pathVariable = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrEmpty(pathVariable))
-            return Task.FromResult<string?>(null);
-
-        var executableName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
-        var paths = pathVariable.Split(Path.PathSeparator);
-
-        foreach (var path in paths)
+        var dotnetRootFromEnvironment = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        if (!string.IsNullOrEmpty(dotnetRootFromEnvironment))
         {
-            try
+            var candidate = Path.Combine(dotnetRootFromEnvironment, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+            if (File.Exists(candidate))
             {
-                var fullPath = Path.Combine(path, executableName);
-                if (File.Exists(fullPath))
-                    return Task.FromResult<string?>(fullPath);
-            }
-            catch
-            {
-                // Ignore invalid paths
+                return candidate;
             }
         }
 
-        return Task.FromResult<string?>(null);
+        return await DotNetPathUtilities.LocateDotNetExecutableAsync(cancellationToken);
     }
 
     private static async Task<string> RunDotNetInfoAsync(

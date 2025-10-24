@@ -41,7 +41,6 @@ public static class DotNetLocator
 
         try
         {
-            // Try all three implementations in order of preference
             var implementations = new IDotNetLocator[]
             {
                 new DotNetPInvokeLocator(),
@@ -49,18 +48,30 @@ public static class DotNetLocator
                 new DotNetProcessLocator()
             };
 
+            DotNetLocationResult<DotNetInstallationInfo>? lastResult = null;
             Exception? lastException = null;
+
             foreach (var implementation in implementations)
             {
                 try
                 {
-                    return await implementation.GetInstallationInfoAsync(probingDirectory, null, cancellationToken);
+                    var result = await implementation.GetInstallationInfoAsync(probingDirectory, null, cancellationToken);
+                    if (result.IsSuccess)
+                    {
+                        return result;
+                    }
+
+                    lastResult = result;
                 }
                 catch (Exception ex)
                 {
                     lastException = ex;
-                    // Continue to next implementation
                 }
+            }
+
+            if (lastResult != null)
+            {
+                return lastResult;
             }
 
             return DotNetLocationResult<DotNetInstallationInfo>.Failure(
@@ -105,7 +116,6 @@ public static class DotNetLocator
 
         try
         {
-            // Try all three implementations in order of preference
             var implementations = new IDotNetLocator[]
             {
                 new DotNetPInvokeLocator(),
@@ -113,21 +123,34 @@ public static class DotNetLocator
                 new DotNetProcessLocator()
             };
 
+            DotNetLocationResult<DotNetInstallationInfo>? lastResult = null;
             Exception? lastException = null;
+
             foreach (var implementation in implementations)
             {
                 try
                 {
-                    return await implementation.GetInstallationInfoAsync(
-                        probingDirectory ?? Environment.CurrentDirectory, 
-                        dotnetRoot, 
+                    var result = await implementation.GetInstallationInfoAsync(
+                        probingDirectory ?? Environment.CurrentDirectory,
+                        dotnetRoot,
                         cancellationToken);
+
+                    if (result.IsSuccess)
+                    {
+                        return result;
+                    }
+
+                    lastResult = result;
                 }
                 catch (Exception ex)
                 {
                     lastException = ex;
-                    // Continue to next implementation
                 }
+            }
+
+            if (lastResult != null)
+            {
+                return lastResult;
             }
 
             return DotNetLocationResult<DotNetInstallationInfo>.Failure(

@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions;
 using Xunit;
 
-namespace DotNetLocator.Tests;
+namespace Microsoft.Extensions.Tests;
 
 public class DotNetLocatorApiTests
 {
@@ -113,9 +113,9 @@ public class VersionSortingTests
             {
                 var current = ParseVersion(versions[i]);
                 var next = ParseVersion(versions[i + 1]);
-                
+
                 // Current version should be >= next version (descending order)
-                current.Should().BeGreaterOrEqualTo(next, 
+                current.Should().BeGreaterThanOrEqualTo(next,
                     $"Version {versions[i]} should be >= {versions[i + 1]} in descending sort order");
             }
         }
@@ -141,7 +141,7 @@ public class VersionSortingTests
                 var next = ParseVersion(versions[i + 1]);
                 
                 // Current version should be >= next version (descending order)
-                current.Should().BeGreaterOrEqualTo(next, 
+                current.Should().BeGreaterThanOrEqualTo(next, 
                     $"Version {versions[i]} should be >= {versions[i + 1]} in descending sort order");
             }
         }

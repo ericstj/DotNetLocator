@@ -18,7 +18,7 @@ internal sealed class DotNetPInvokeLocator : IDotNetLocator
     {
         try
         {
-            var resolvedDotNetRoot = dotnetRoot ?? await DiscoverDotNetRootAsync();
+            var resolvedDotNetRoot = dotnetRoot ?? await DiscoverDotNetRootAsync(cancellationToken);
             if (string.IsNullOrEmpty(resolvedDotNetRoot))
             {
                 return DotNetLocationResult<DotNetInstallationInfo>.Failure(
@@ -51,7 +51,7 @@ internal sealed class DotNetPInvokeLocator : IDotNetLocator
         }
     }
 
-    private static async Task<string?> DiscoverDotNetRootAsync()
+    private static async Task<string?> DiscoverDotNetRootAsync(CancellationToken cancellationToken)
     {
         // Try environment variable first
         var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
@@ -61,7 +61,7 @@ internal sealed class DotNetPInvokeLocator : IDotNetLocator
         }
 
         // Try to find dotnet executable and derive root from it
-        var dotnetExecutable = await FindDotNetExecutableInPathAsync();
+        var dotnetExecutable = await DotNetPathUtilities.LocateDotNetExecutableAsync(cancellationToken);
         if (!string.IsNullOrEmpty(dotnetExecutable))
         {
             return Path.GetDirectoryName(dotnetExecutable);
@@ -86,32 +86,6 @@ internal sealed class DotNetPInvokeLocator : IDotNetLocator
         }
 
         return null;
-    }
-
-    private static Task<string?> FindDotNetExecutableInPathAsync()
-    {
-        var pathVariable = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrEmpty(pathVariable))
-            return Task.FromResult<string?>(null);
-
-        var executableName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
-        var paths = pathVariable.Split(Path.PathSeparator);
-
-        foreach (var path in paths)
-        {
-            try
-            {
-                var fullPath = Path.Combine(path, executableName);
-                if (File.Exists(fullPath))
-                    return Task.FromResult<string?>(fullPath);
-            }
-            catch
-            {
-                // Ignore invalid paths
-            }
-        }
-
-        return Task.FromResult<string?>(null);
     }
 
     private static string? FindHostfxrLibrary(string dotnetRoot)

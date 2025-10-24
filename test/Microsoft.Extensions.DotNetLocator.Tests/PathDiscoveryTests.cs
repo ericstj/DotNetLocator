@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace DotNetLocator.Tests;
+namespace Microsoft.Extensions.Tests;
 
 /// <summary>
 /// Tests PATH environment variable discovery logic.
