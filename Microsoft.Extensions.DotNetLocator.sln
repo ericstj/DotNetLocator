@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.DotNetLocator", "src\Microsoft.Extensions.DotNetLocator\Microsoft.Extensions.DotNetLocator.csproj", "{2C5F6F7D-8A9E-4C5F-8D2A-1B5A8F9E3D4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.DotNetLocator.Tests", "test\Microsoft.Extensions.DotNetLocator.Tests\Microsoft.Extensions.DotNetLocator.Tests.csproj", "{8A7B9C1D-2E3F-4A5B-6C7D-8E9F1A2B3C4D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2C5F6F7D-8A9E-4C5F-8D2A-1B5A8F9E3D4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C5F6F7D-8A9E-4C5F-8D2A-1B5A8F9E3D4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C5F6F7D-8A9E-4C5F-8D2A-1B5A8F9E3D4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C5F6F7D-8A9E-4C5F-8D2A-1B5A8F9E3D4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A7B9C1D-2E3F-4A5B-6C7D-8E9F1A2B3C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A7B9C1D-2E3F-4A5B-6C7D-8E9F1A2B3C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A7B9C1D-2E3F-4A5B-6C7D-8E9F-8D2A-1B5A8F9E3D4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A7B9C1D-2E3F-4A5B-6C7D-8E9F1A2B3C4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
